@@ -16,6 +16,19 @@ import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.android.volley.Request;
+import com.android.volley.RequestQueue;
+import com.android.volley.Response;
+import com.android.volley.VolleyError;
+import com.android.volley.toolbox.JsonArrayRequest;
+import com.android.volley.toolbox.JsonObjectRequest;
+import com.android.volley.toolbox.StringRequest;
+import com.android.volley.toolbox.Volley;
+import com.squareup.picasso.Picasso;
+
+import org.json.JSONArray;
+import org.json.JSONException;
+import org.json.JSONObject;
 import org.xmlpull.v1.XmlPullParser;
 import org.xmlpull.v1.XmlPullParserException;
 
@@ -30,7 +43,7 @@ public class MainActivity extends AppCompatActivity {
 
     private static final String TAG = "MainActivity";
 
-    private EditText rssLink;
+    private EditText searchField;
     private Button fetchButtonVar;
     private TextView name;
     private TextView description;
@@ -39,10 +52,9 @@ public class MainActivity extends AppCompatActivity {
     private String podDesc;
     private String imgUrl;
     private List<RssFeedModel> mFeedModelList;
-
-
-
-
+    RequestQueue requestQueue;
+    private String url;
+    private String searchString;
 
 
     @Override
@@ -50,169 +62,65 @@ public class MainActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-        fetchButtonVar = findViewById(R.id.fetch);
-        rssLink = findViewById(R.id.rssLink);
-        name = findViewById(R.id.name);
-        description = findViewById(R.id.description);
-        podImage = findViewById(R.id.podcastImage);
-        fetchButtonVar.setOnClickListener(new View.OnClickListener() {
+        name  = findViewById(R.id.resultView);
+        searchField = findViewById(R.id.searchField);
+        requestQueue = Volley.newRequestQueue(this);
+        searchString = null;
+
+
+    }
+
+
+    public void getRepoList(View view) {
+        // First, we insert the username into the repo url.
+        // The repo url is defined in GitHubs API docs (https://developer.github.com/v3/repos/).
+        RequestQueue queue = Volley.newRequestQueue(this);
+        this.url = "https://itunes.apple.com/search?media=podcast&term=";
+        searchString = searchField.getText().toString();
+        this.url = url + searchString;
+        JsonObjectRequest  jsonObjectRequest = new JsonObjectRequest
+                (Request.Method.GET, url, (String) null, new Response.Listener<JSONObject>() {
+                    @Override
+                    public void onResponse(JSONObject response) {
+                        // Display the first 500 characters of the response string.
+                        Integer numberOfResults = null;
+                        JSONArray results = null;
+                        JSONObject singleResult = null;
+                        Integer i = 0;
+                        ArrayList<String> podcastNames = new ArrayList<>();
+                        JSONObject JSONresponse = response;
+                        try {
+                            numberOfResults = JSONresponse.getInt("resultCount");
+                            results = JSONresponse.getJSONArray("results");
+                            while (i<numberOfResults){
+                                singleResult = results.getJSONObject(i);
+                                String a = singleResult.getString("trackName");
+                                podcastNames.add(a);
+                                i++;
+
+                            }
+                        } catch (JSONException e) {
+                            e.printStackTrace();
+                        }
+
+                        i = 0;
+                        podName = "";
+                        while (i<podcastNames.size()){
+                            podName = podName + '\n' + podcastNames.get(i);
+                            i++;
+                        }
+                        name.setText("Number of results : "+ numberOfResults.toString() + '\n' + podName);
+                    }
+                }, new Response.ErrorListener() {
             @Override
-            public void onClick(View view) {
-                new FetchFeedTask().execute((Void) null);
+            public void onErrorResponse(VolleyError error) {
+                name.setText("That didn't work!");
             }
         });
+
+
+// Add the request to the RequestQueue.
+        queue.add(jsonObjectRequest);
     }
 
-    public List<RssFeedModel> parseFeed(InputStream inputStream) throws XmlPullParserException, IOException {
-        String title = null;
-        String link = null;
-        String description = null;
-        String url = null;
-        boolean isItem = false;
-        List<RssFeedModel> items = new ArrayList<>();
-
-        try {
-            XmlPullParser xmlPullParser = Xml.newPullParser();
-            xmlPullParser.setFeature(XmlPullParser.FEATURE_PROCESS_NAMESPACES, false);
-            xmlPullParser.setInput(inputStream, null);
-
-            xmlPullParser.nextTag();
-            while (xmlPullParser.next() != XmlPullParser.END_DOCUMENT) {
-                int eventType = xmlPullParser.getEventType();
-
-                String name = xmlPullParser.getName();
-                if(name == null)
-                    continue;
-
-                if(eventType == XmlPullParser.END_TAG) {
-                    if(name.equalsIgnoreCase("item")) {
-                        isItem = false;
-                    }
-                     continue;
-                }
-
-                if (eventType == XmlPullParser.START_TAG) {
-                    if(name.equalsIgnoreCase("item")) {
-                        isItem = true;
-                        continue;
-                    }
-                }
-
-                Log.d("MainActivity", "Parsing name ==> " + name);
-                String result = "";
-                if (xmlPullParser.next() == XmlPullParser.TEXT) {
-                    result = xmlPullParser.getText();
-                    xmlPullParser.nextTag();
-                }
-
-                if (name.equalsIgnoreCase("title")) {
-                    title = result;
-                } else if (name.equalsIgnoreCase("link")) {
-                    link = result;
-                } else if (name.equalsIgnoreCase("description")) {
-                    description = result;
-                }
-                else if (name.equalsIgnoreCase("url")) {
-                    Log.d("MainActivity", "URL " + result);
-                }
-
-                if (title != null && link != null && description != null) {
-                    if(isItem) {
-                        RssFeedModel item = new RssFeedModel(title, link, description);
-                        items.add(item);
-                    }
-                    else {
-                        podName = title;
-                        podDesc = description;
-                        imgUrl = url;
-                    }
-
-                    title = null;
-                    link = null;
-                    description = null;
-                    isItem = false;
-                }
-            }
-
-            return items;
-        } finally {
-            inputStream.close();
-        }
-    }
-
-
-    public static Bitmap getBitmapFromURL(String src) {
-        try {
-            Log.e("src",src);
-
-
-            InputStream input = new java.net.URL(src).openStream();
-            Bitmap myBitmap = BitmapFactory.decodeStream(input);
-            Log.e("Bitmap","returned");
-            return myBitmap;
-        } catch (IOException e) {
-            e.printStackTrace();
-            Log.e("Exception",e.getMessage());
-            return null;
-        }
-    }
-
-
-
-    private class FetchFeedTask extends AsyncTask<Void, Void, Boolean> {
-
-        private String urlLink;
-
-        @Override
-        protected void onPreExecute() {
-
-            podName = null;
-            podDesc = null;
-          //  name.setText("Feed Title");
-          //  description.setText("Feed Description: ");
-            urlLink = rssLink.getText().toString();
-        }
-
-        @Override
-        protected Boolean doInBackground(Void... voids) {
-            if (TextUtils.isEmpty(urlLink))
-                return false;
-
-            try {
-                if(!urlLink.startsWith("http://") && !urlLink.startsWith("https://"))
-                    urlLink = "http://" + urlLink;
-
-                URL url = new URL(urlLink);
-                InputStream inputStream = url.openConnection().getInputStream();
-                mFeedModelList = parseFeed(inputStream);
-                return true;
-            } catch (IOException e) {
-                Log.e(TAG, "Error", e);
-
-            } catch (XmlPullParserException e) {
-                Log.e(TAG, "Error", e);
-
-            }
-            return false;
-        }
-
-        @Override
-        protected void onPostExecute(Boolean success) {
-
-
-            if (success) {
-                if(podName!=null) {
-                    name.setText(podName);
-                    description.setText(podDesc);
-                 //   podImage.setImageBitmap(getBitmapFromURL("https://megaphone-prod.s3.amazonaws.com/podcasts/05f71746-a825-11e5-aeb5-a7a572df575e/image/uploads_2F1569901799455-iwzhcytult-23e425914607b342a7b8aaaefebf8005_2FReplyAll_093019.jpg"));
-                    // Fill RecyclerView
-                }
-
-            } else {
-                Toast.makeText(MainActivity.this,
-                        "Enter a valid Rss feed url",
-                        Toast.LENGTH_LONG).show();
-            }
-        }
-    }
 }
