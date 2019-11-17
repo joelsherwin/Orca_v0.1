@@ -1,7 +1,12 @@
 package com.example.orca_v01;
 
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.recyclerview.widget.DefaultItemAnimator;
+import androidx.recyclerview.widget.DividerItemDecoration;
+import androidx.recyclerview.widget.LinearLayoutManager;
+import androidx.recyclerview.widget.RecyclerView;
 
+import android.content.Context;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.os.AsyncTask;
@@ -10,6 +15,8 @@ import android.text.TextUtils;
 import android.util.Log;
 import android.util.Xml;
 import android.view.View;
+import android.view.animation.AnimationUtils;
+import android.view.animation.LayoutAnimationController;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ImageView;
@@ -42,7 +49,9 @@ import java.util.List;
 public class MainActivity extends AppCompatActivity {
 
     private static final String TAG = "MainActivity";
-
+    private ArrayList<PodcastMetadata> searchResults = new ArrayList<>();
+    private RecyclerView searchResultsView;
+    private PodcastSearchRecyclerAdapter searchRecyclerAdapter;
     private EditText searchField;
     private Button fetchButtonVar;
     private TextView name;
@@ -62,7 +71,19 @@ public class MainActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-        name  = findViewById(R.id.resultView);
+        searchResultsView = findViewById(R.id.podcastSearchResults);
+        searchRecyclerAdapter = new PodcastSearchRecyclerAdapter(searchResults);
+
+        int resId = R.anim.layout_animation_fall_down;
+        final Context context = searchResultsView.getContext();
+        LayoutAnimationController animation = AnimationUtils.loadLayoutAnimation(context, resId);
+
+        searchResultsView.setLayoutManager(new LinearLayoutManager(getApplicationContext()));
+        searchResultsView.setItemAnimator( new DefaultItemAnimator());
+        searchResultsView.setLayoutAnimation(animation);
+        searchResultsView.addItemDecoration(new DividerItemDecoration(this, LinearLayoutManager.VERTICAL));
+        searchResultsView.setAdapter(searchRecyclerAdapter);
+
         searchField = findViewById(R.id.searchField);
         requestQueue = Volley.newRequestQueue(this);
         searchString = null;
@@ -77,6 +98,7 @@ public class MainActivity extends AppCompatActivity {
         RequestQueue queue = Volley.newRequestQueue(this);
         this.url = "https://itunes.apple.com/search?media=podcast&term=";
         searchString = searchField.getText().toString();
+        searchResults.clear();
         this.url = url + searchString;
         JsonObjectRequest  jsonObjectRequest = new JsonObjectRequest
                 (Request.Method.GET, url, (String) null, new Response.Listener<JSONObject>() {
@@ -94,11 +116,18 @@ public class MainActivity extends AppCompatActivity {
                             results = JSONresponse.getJSONArray("results");
                             while (i<numberOfResults){
                                 singleResult = results.getJSONObject(i);
-                                String a = singleResult.getString("trackName");
-                                podcastNames.add(a);
+                                String p_name = singleResult.getString("trackName");
+                                String p_desc = singleResult.getString("primaryGenreName");
+                                String p_art = singleResult.getString("artworkUrl100");
+                                podcastNames.add(p_name);
+                                PodcastMetadata pod = null;
+                                pod = new PodcastMetadata(p_name,p_desc,p_art);
+                                searchResults.add(pod);
                                 i++;
-
                             }
+                            searchRecyclerAdapter.notifyDataSetChanged();
+                            searchResultsView.scheduleLayoutAnimation();
+
                         } catch (JSONException e) {
                             e.printStackTrace();
                         }
@@ -109,7 +138,7 @@ public class MainActivity extends AppCompatActivity {
                             podName = podName + '\n' + podcastNames.get(i);
                             i++;
                         }
-                        name.setText("Number of results : "+ numberOfResults.toString() + '\n' + podName);
+
                     }
                 }, new Response.ErrorListener() {
             @Override
