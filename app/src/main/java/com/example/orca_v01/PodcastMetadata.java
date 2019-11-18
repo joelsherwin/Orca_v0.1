@@ -5,13 +5,17 @@ public class PodcastMetadata {
     public String podcastDesc;
     public String podcastGenre;
     public String podoastArtUrl;
+    public String podcastArtist;
     public String lastEpisode;
     public String podcastCount;
+    public String podcastFeedUrl;
 
-    public PodcastMetadata(String name, String desc, String artUrl){
+    public PodcastMetadata(String name, String desc, String artUrl, String artist, String feedUrl){
         podcastName = name;
         podcastDesc = desc;
         podoastArtUrl = artUrl;
+        podcastArtist = artist;
+        podcastFeedUrl = feedUrl;
     }
 
     public String getPodcastName(){
@@ -26,4 +30,9 @@ public class PodcastMetadata {
         return podoastArtUrl;
     }
 
+    public String getPodcastArtist(){return podcastArtist;}
+
+    public String getPodcastFeedUrl() {
+        return podcastFeedUrl;
+    }
 }

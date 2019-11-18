@@ -7,8 +7,8 @@
 
     <ImageView
         android:id="@+id/podcastArt"
-        android:layout_width="108dp"
-        android:layout_height="110dp"
+        android:layout_width="87dp"
+        android:layout_height="87dp"
         android:layout_marginTop="8dp"
         android:layout_marginBottom="8dp"
         app:layout_constraintBottom_toBottomOf="parent"
@@ -19,9 +19,9 @@
 
     <TextView
         android:id="@+id/podcastName"
-        android:layout_width="275dp"
-        android:layout_height="34dp"
-        android:layout_marginStart="16dp"
+        android:layout_width="314dp"
+        android:layout_height="25dp"
+        android:layout_marginStart="8dp"
         android:layout_marginTop="8dp"
         android:text="TextView"
         android:textSize="16sp"
@@ -31,15 +31,27 @@
 
     <TextView
         android:id="@+id/podcastDescription"
-        android:layout_width="245dp"
-        android:layout_height="57dp"
+        android:layout_width="312dp"
+        android:layout_height="25dp"
+        android:layout_marginStart="8dp"
         android:layout_marginTop="8dp"
+        android:text="TextView"
+        android:textSize="14sp"
+        app:layout_constraintStart_toEndOf="@+id/podcastArt"
+        app:layout_constraintTop_toBottomOf="@+id/podcastName" />
+
+    <TextView
+        android:id="@+id/podcastArtist"
+        android:layout_width="314dp"
+        android:layout_height="25dp"
+        android:layout_marginStart="8dp"
+        android:layout_marginTop="4dp"
         android:layout_marginBottom="8dp"
         android:text="TextView"
-        android:textSize="18sp"
+        android:textSize="14sp"
         app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintStart_toStartOf="@+id/podcastName"
-        app:layout_constraintTop_toBottomOf="@+id/podcastName"
-        app:layout_constraintVertical_bias="0.652" />
+        app:layout_constraintStart_toEndOf="@+id/podcastArt"
+        app:layout_constraintTop_toBottomOf="@+id/podcastDescription"
+        app:layout_constraintVertical_bias="0.428" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>

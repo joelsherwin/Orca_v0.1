@@ -1,11 +1,13 @@
 package com.example.orca_v01;
 
+import android.content.Context;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageView;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
@@ -17,8 +19,10 @@ import java.util.ArrayList;
 public class PodcastSearchRecyclerAdapter extends RecyclerView.Adapter<PodcastSearchRecyclerAdapter.PodViewHolder> {
     private ArrayList<PodcastMetadata> arrayList = new ArrayList<>();
 
+
     public PodcastSearchRecyclerAdapter(ArrayList<PodcastMetadata> searchResults) {
         this.arrayList = searchResults;
+
     }
 
     @NonNull
@@ -37,7 +41,10 @@ public class PodcastSearchRecyclerAdapter extends RecyclerView.Adapter<PodcastSe
         PodcastMetadata podcast = arrayList.get(position);
         holder.name.setText(podcast.getPodcastName());
         holder.desc.setText(podcast.getPodcastDesc());
+        holder.artist.setText(podcast.getPodcastArtist());
         Picasso.get().load(podcast.getPodoastArtUrl()).into(holder.art);
+
+
     }
 
     @Override
@@ -45,15 +52,22 @@ public class PodcastSearchRecyclerAdapter extends RecyclerView.Adapter<PodcastSe
         return arrayList.size();
     }
 
-    public class PodViewHolder extends RecyclerView.ViewHolder {
-        TextView name, desc;
+    public class PodViewHolder extends RecyclerView.ViewHolder implements View.OnClickListener{
+        TextView name, desc, artist;
         ImageView art;
+        View mView;
         public PodViewHolder(View itemView) {
             super(itemView);
             Log.v("ViewHolder","in View Holder");
             name = itemView.findViewById(R.id.podcastName);
             desc = itemView.findViewById(R.id.podcastDescription);
             art = itemView.findViewById(R.id.podcastArt);
+            artist = itemView.findViewById(R.id.podcastArtist);
+
+        }
+
+        @Override
+        public void onClick(View v) {
 
         }
     }
