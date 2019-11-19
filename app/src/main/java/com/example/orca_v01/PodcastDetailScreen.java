@@ -34,7 +34,7 @@ public class PodcastDetailScreen extends AppCompatActivity {
     private TextView podcastDescription;
     private ImageView podcastArtView;
     private String podcastArtworkUrl;
-    private String podcastFeedUrl;
+    public String podcastFeedUrl;
     private URL url;
 
     public PodcastDetailScreen() throws IOException {
@@ -52,7 +52,11 @@ public class PodcastDetailScreen extends AppCompatActivity {
         String podcastArtist = getIntent().getStringExtra("PODCAST_ARTIST");
         String podcastArtworkUrl = getIntent().getStringExtra("PODCAST_ART");
         String podcastFeedUrl = getIntent().getStringExtra("PODCAST_FEEDURL");
-        new FetchFeedTask().execute((Void) null);
+        new FetchFeedTask().execute((podcastFeedUrl));
+
+
+
+
         podcastNameView.setText(podcastName);
         podcastArtistView.setText(podcastArtist);
         Picasso.get().load(podcastArtworkUrl).into(podcastArtView);
@@ -101,8 +105,8 @@ public class PodcastDetailScreen extends AppCompatActivity {
                     xmlPullParser.nextTag();
                 }
 
-                if (name.equalsIgnoreCase("description")) {
-                    description = result;
+                if ((name.equalsIgnoreCase("description") || name.contains("summary")))  {
+                    if(!isItem) description = result;
                 }
                 
            }
@@ -113,7 +117,7 @@ public class PodcastDetailScreen extends AppCompatActivity {
         }
     }
 
-    private class FetchFeedTask extends AsyncTask<Void, Void, Boolean> {
+    private class FetchFeedTask extends AsyncTask<String, Void, Boolean> {
 
         private String urlLink;
 
@@ -122,20 +126,21 @@ public class PodcastDetailScreen extends AppCompatActivity {
 
             //  name.setText("Feed Title");
             //  description.setText("Feed Description: ");
-            urlLink = "https://feeds.megaphone.fm/replyall";
+            urlLink = podcastFeedUrl;
 
         }
 
         @Override
-        protected Boolean doInBackground(Void... voids) {
-            if (TextUtils.isEmpty(urlLink))
+        protected Boolean doInBackground(String... strings) {
+            String feedUrl  = strings[0];
+            if (TextUtils.isEmpty(feedUrl))
                 return false;
 
             try {
-                if(!urlLink.startsWith("http://") && !urlLink.startsWith("https://"))
-                    urlLink = "http://" + urlLink;
+                if(!feedUrl.startsWith("http://") && !feedUrl.startsWith("https://"))
+                    feedUrl = "http://" + feedUrl;
 
-                URL url = new URL(urlLink);
+                URL url = new URL(feedUrl);
                 InputStream inputStream = url.openConnection().getInputStream();
                 podDesc = parseFeed(inputStream);
                 return true;
