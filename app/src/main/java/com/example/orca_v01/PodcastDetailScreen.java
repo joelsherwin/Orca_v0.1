@@ -32,22 +32,27 @@ public class PodcastDetailScreen extends AppCompatActivity {
     private TextView podcastNameView;
     private TextView podcastArtistView;
     private TextView podcastDescription;
+    private TextView debugText;
     private ImageView podcastArtView;
     private String podcastArtworkUrl;
     public String podcastFeedUrl;
+    public List<PodcastEpisodeMetadata> podcastEpisodes = new ArrayList<>();
     private URL url;
+    private String debugString;
 
     public PodcastDetailScreen() throws IOException {
     }
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
+        debugString = "";
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_podcast_detail_screen);
         podcastNameView = findViewById(R.id.podcastName);
         podcastArtistView = findViewById(R.id.podcastArtist);
         podcastArtView = findViewById(R.id.podcastArt);
         podcastDescription = findViewById(R.id.podcastDescription);
+        debugText = findViewById(R.id.debugText);
         String podcastName = getIntent().getStringExtra("PODCAST_NAME");
         String podcastArtist = getIntent().getStringExtra("PODCAST_ARTIST");
         String podcastArtworkUrl = getIntent().getStringExtra("PODCAST_ART");
@@ -62,14 +67,14 @@ public class PodcastDetailScreen extends AppCompatActivity {
         Picasso.get().load(podcastArtworkUrl).into(podcastArtView);
 
 
-
     }
 
 
     public String parseFeed(InputStream inputStream) throws XmlPullParserException, IOException {
-        
+        PodcastEpisodeMetadata podcastEpisode = new PodcastEpisodeMetadata();
         String description = null;
         boolean isItem = false;
+        Integer count = 0;
 
         try {
             XmlPullParser xmlPullParser = Xml.newPullParser();
@@ -103,6 +108,13 @@ public class PodcastDetailScreen extends AppCompatActivity {
                 if (xmlPullParser.next() == XmlPullParser.TEXT) {
                     result = xmlPullParser.getText();
                     xmlPullParser.nextTag();
+                }
+
+                if (isItem && count < 10 && name.equalsIgnoreCase("title"))  {
+                     podcastEpisode.episodeName = result;
+                     podcastEpisodes.add(podcastEpisode);
+                    debugString = debugString + '\n' + result;
+                    count++;
                 }
 
                 if ((name.equalsIgnoreCase("description") || name.contains("summary")))  {
@@ -139,7 +151,7 @@ public class PodcastDetailScreen extends AppCompatActivity {
             try {
                 if(!feedUrl.startsWith("http://") && !feedUrl.startsWith("https://"))
                     feedUrl = "http://" + feedUrl;
-
+                feedUrl.replace(".xml","");
                 URL url = new URL(feedUrl);
                 InputStream inputStream = url.openConnection().getInputStream();
                 podDesc = parseFeed(inputStream);
@@ -161,6 +173,7 @@ public class PodcastDetailScreen extends AppCompatActivity {
             if (success) {
                 if(podDesc!=null) {
                     podcastDescription.setText(podDesc);
+                    debugText.setText(debugString);
                 }
 
             } else {

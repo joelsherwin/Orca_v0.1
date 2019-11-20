@@ -53,4 +53,15 @@
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/podcastName" />
 
+    <EditText
+        android:id="@+id/debugText"
+        android:layout_width="368dp"
+        android:layout_height="428dp"
+        android:ems="10"
+        android:gravity="start|top"
+        android:inputType="textMultiLine"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/podcastDescription"
+        tools:layout_editor_absoluteX="18dp" />
+
 </androidx.constraintlayout.widget.ConstraintLayout>
