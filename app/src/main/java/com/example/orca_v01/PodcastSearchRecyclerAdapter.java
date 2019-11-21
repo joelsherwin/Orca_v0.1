@@ -1,13 +1,11 @@
 package com.example.orca_v01;
 
-import android.content.Context;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageView;
 import android.widget.TextView;
-import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
@@ -59,7 +57,7 @@ public class PodcastSearchRecyclerAdapter extends RecyclerView.Adapter<PodcastSe
         public PodViewHolder(View itemView) {
             super(itemView);
             Log.v("ViewHolder","in View Holder");
-            name = itemView.findViewById(R.id.podcastName);
+            name = itemView.findViewById(R.id.episodeName);
             desc = itemView.findViewById(R.id.podcastDescription);
             art = itemView.findViewById(R.id.podcastArt);
             artist = itemView.findViewById(R.id.podcastArtist);

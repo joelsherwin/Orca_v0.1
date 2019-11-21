@@ -19,6 +19,12 @@ android {
     }
 }
 
+repositories {
+    maven {
+        url 'https://maven.icosillion.com/artifactory/open-source/'
+    }
+}
+
 dependencies {
     implementation fileTree(dir: 'libs', include: ['*.jar'])
     implementation 'androidx.appcompat:appcompat:1.1.0'
@@ -29,4 +35,5 @@ dependencies {
     implementation 'androidx.recyclerview:recyclerview:1.0.0'
     implementation 'com.squareup.picasso:picasso:2.71828'
     implementation 'com.mcxiaoke.volley:library:1.0.19'
+    implementation 'com.icosillion.podengine:podengine:2.3'
 }
